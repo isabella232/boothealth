@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -34,10 +35,17 @@ func init() {
 type Stats struct {
 }
 
+// For verifying the service is up
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "OK")
+}
+
 // NewStats returns new empty Stats object.
 func NewStats(statsPort string) Stats {
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
+		// Add most trivial healthcheck
+		http.HandleFunc("/health", healthHandler)
 		log.Fatal(http.ListenAndServe(statsPort, nil))
 	}()
 	return Stats{}
